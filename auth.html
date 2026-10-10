@@ -1,0 +1,78 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Login / Register | InCampus</title><link rel="stylesheet" href="style.css"></head><body>
+<nav><a class="logo" href="index.html">In<span>Campus</span></a><ul><li><a href="index.html">Home</a></li><li><a href="lost-items.html">Lost Items</a></li><li><a href="found-items.html">Found Items</a></li><li><a href="items.html">Items</a></li><li><a href="dashboard.html">Overview</a></li><li><a class="active" href="auth.html">Login</a></li></ul></nav>
+<div class="page-head"><div class="container"><h1>Welcome to InCampus</h1><p>Login to your account or register as a new student.</p></div></div>
+<section><div class="container">
+<div class="auth-card">
+<div class="tabs"><button type="button" id="tab-login" class="tab active">Login</button><button type="button" id="tab-register" class="tab">Register</button></div>
+
+<form id="login-form">
+<label for="login-email">Email</label><input type="email" id="login-email" placeholder="you@gmail.com" required>
+<label for="login-password">Password</label><input type="password" id="login-password" placeholder="Enter your password" required>
+<button type="submit" class="btn btn-primary btn-block">Login</button>
+<p class="auth-switch">New here? <a href="#" id="go-register">Create an account</a></p>
+</form>
+
+<form id="register-form" class="hidden">
+<label for="reg-name">Full Name</label><input type="text" id="reg-name" placeholder="e.g. Pranjal Gaikwad" required>
+<label for="reg-email">Email</label><input type="email" id="reg-email" placeholder="you@gmail.com" required>
+<label for="reg-phone">Phone Number</label><input type="tel" id="reg-phone" placeholder="10 digit mobile number" pattern="[0-9]{10}" required>
+<label for="reg-class">Class</label>
+<select id="reg-class" required><option value="">Select your class</option><option>FYBSc</option><option>SYBSc</option><option>TYBSc</option><option>FYBCom</option><option>SYBCom</option><option>TYBCom</option><option>FYBA</option><option>SYBA</option><option>TYBA</option></select>
+<label for="reg-password">Password</label><input type="password" id="reg-password" placeholder="At least 6 characters" minlength="6" required>
+<label for="reg-confirm">Confirm Password</label><input type="password" id="reg-confirm" placeholder="Re-enter password" required>
+<button type="submit" class="btn btn-primary btn-block">Register</button>
+<p class="auth-switch">Already registered? <a href="#" id="go-login">Login here</a></p>
+</form>
+
+<p id="auth-message" class="auth-message"></p>
+</div>
+</div></section>
+<footer><strong>InCampus</strong> — Student Interaction & Management System<br>Connect • Interact • Manage Campus Life</footer>
+<script src="script.js"></script>
+<script>
+var loginForm=document.getElementById('login-form'),regForm=document.getElementById('register-form'),
+tabLogin=document.getElementById('tab-login'),tabReg=document.getElementById('tab-register'),msg=document.getElementById('auth-message');
+
+function show(which){
+  var isLogin=which==='login';
+  loginForm.classList.toggle('hidden',!isLogin);regForm.classList.toggle('hidden',isLogin);
+  tabLogin.classList.toggle('active',isLogin);tabReg.classList.toggle('active',!isLogin);
+  msg.textContent='';msg.className='auth-message';
+}
+function say(text,ok){msg.textContent=text;msg.className='auth-message '+(ok?'ok':'error');}
+function getUsers(){try{return JSON.parse(localStorage.getItem('incampusUsers')||'[]');}catch(e){return [];}}
+
+tabLogin.onclick=function(){show('login');};
+tabReg.onclick=function(){show('register');};
+document.getElementById('go-register').onclick=function(e){e.preventDefault();show('register');};
+document.getElementById('go-login').onclick=function(e){e.preventDefault();show('login');};
+
+regForm.onsubmit=function(e){
+  e.preventDefault();
+  var name=document.getElementById('reg-name').value.trim(),
+  email=document.getElementById('reg-email').value.trim().toLowerCase(),
+  phone=document.getElementById('reg-phone').value.trim(),
+  cls=document.getElementById('reg-class').value,
+  pass=document.getElementById('reg-password').value,
+  confirm=document.getElementById('reg-confirm').value;
+  if(pass!==confirm){say('Passwords do not match.',false);return;}
+  var users=getUsers();
+  if(users.some(function(u){return u.email===email;})){say('This email is already registered. Please login.',false);return;}
+  users.push({name:name,email:email,phone:phone,cls:cls,password:pass});
+  localStorage.setItem('incampusUsers',JSON.stringify(users));
+  regForm.reset();show('login');
+  say('Registration successful! You can login now.',true);
+};
+
+loginForm.onsubmit=function(e){
+  e.preventDefault();
+  var email=document.getElementById('login-email').value.trim().toLowerCase(),
+  pass=document.getElementById('login-password').value;
+  var user=getUsers().filter(function(u){return u.email===email&&u.password===pass;})[0];
+  if(!user){say('Invalid email or password.',false);return;}
+  localStorage.setItem('incampusUser',JSON.stringify({name:user.name,email:user.email}));
+  say('Login successful! Redirecting to home...',true);
+  setTimeout(function(){location.href='index.html';},1000);
+};
+</script>
+</body></html>
